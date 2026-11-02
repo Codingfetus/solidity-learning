@@ -1,10 +1,8 @@
 import hre from "hardhat";
 import { expect } from "chai";
+import { DECIMALS, MINTING_AMOUNT } from "./constant";
 import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
-
-const MINTING_AMOUNT = 100n;
-const DECIMALS = 18n;
 
 describe("My Token", () => {
   let myTokenC: MyToken;
