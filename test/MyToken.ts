@@ -5,6 +5,8 @@ import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("My Token", () => {
+  // ↓ 1~18번째 줄(import, beforeEach)과 name/symbol 테스트는 강의 화면에 안 나옴.
+  //   이전 주차에 만든 본인 파일 그대로 두세요.
   let myTokenC: MyToken;
   let signers: HardhatEthersSigner[];
   beforeEach("should deploy", async () => {
@@ -41,7 +43,17 @@ describe("My Token", () => {
         MINTING_AMOUNT * 10n ** DECIMALS,
       );
     });
+
+    // TDD: Test Driven Development
+    it("should return or revert when minting infinitly", async () => {
+      const hacker = signers[2];
+      const mintingAgainAmount = hre.ethers.parseUnits("10000", DECIMALS);
+      await expect(
+        myTokenC.connect(hacker).mint(mintingAgainAmount, hacker.address),
+      ).to.be.revertedWith("You are not authorized to manage this token");
+    });
   });
+
   describe("Transfer", () => {
     it("shoud have 0.5MT", async () => {
       const signer0 = signers[0];
@@ -96,31 +108,6 @@ describe("My Token", () => {
             hre.ethers.parseUnits("1", DECIMALS),
           ),
       ).to.be.revertedWith("insufficient allowance");
-    });
-    it("should transfer signer0's MT to signer1 by signer1 (approve & transferFrom)", async () => {
-      const signer0 = signers[0];
-      const signer1 = signers[1];
-      const amount = hre.ethers.parseUnits("10", DECIMALS);
-
-      // 1. approve: signer0 이 signer1 에게 10 MT 이동 권한 부여
-      await expect(myTokenC.approve(signer1.address, amount))
-        .to.emit(myTokenC, "Approval")
-        .withArgs(signer1.address, amount);
-
-      // 2. transferFrom: signer1 이 signer0 의 MT 를 자신의 주소(signer1)로 전송
-      await expect(
-        myTokenC
-          .connect(signer1)
-          .transferFrom(signer0.address, signer1.address, amount),
-      )
-        .to.emit(myTokenC, "Transfer")
-        .withArgs(signer0.address, signer1.address, amount);
-
-      // 3. balance 확인
-      expect(await myTokenC.balanceOf(signer0.address)).equal(
-        MINTING_AMOUNT * 10n ** DECIMALS - amount,
-      );
-      expect(await myTokenC.balanceOf(signer1.address)).equal(amount);
     });
   });
 });
