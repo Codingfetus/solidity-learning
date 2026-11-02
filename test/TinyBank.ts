@@ -84,4 +84,31 @@ describe("TinyBank", () => {
       ).to.be.revertedWith("You are not a manager");
     });
   });
+
+  describe("Multi manager", () => {
+    it("should revert when non-manager confirms", async () => {
+      const hacker = signers[3];
+      await expect(tinyBankC.connect(hacker).confirm()).to.be.revertedWith(
+        "You are not a manager",
+      );
+    });
+
+    it("should revert when not all managers confirmed", async () => {
+      const rewardToChange = hre.ethers.parseUnits("10000", DECIMALS);
+      await tinyBankC.connect(managers[0]).confirm();
+      await tinyBankC.connect(managers[1]).confirm();
+      await expect(
+        tinyBankC.connect(managers[0]).setRewardPerBlock(rewardToChange),
+      ).to.be.revertedWith("Not all confirmed yet");
+    });
+
+    it("should change rewardPerBlock when all managers confirmed", async () => {
+      const rewardToChange = hre.ethers.parseUnits("10000", DECIMALS);
+      for (let i = 0; i < managers.length; i++) {
+        await tinyBankC.connect(managers[i]).confirm();
+      }
+      await tinyBankC.connect(managers[0]).setRewardPerBlock(rewardToChange);
+      expect(await tinyBankC.rewardPerBlock()).equal(rewardToChange);
+    });
+  });
 });

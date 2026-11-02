@@ -5,8 +5,6 @@ import { MyToken } from "../typechain-types";
 import { HardhatEthersSigner } from "@nomicfoundation/hardhat-ethers/signers";
 
 describe("My Token", () => {
-  // ↓ 1~18번째 줄(import, beforeEach)과 name/symbol 테스트는 강의 화면에 안 나옴.
-  //   이전 주차에 만든 본인 파일 그대로 두세요.
   let myTokenC: MyToken;
   let signers: HardhatEthersSigner[];
   beforeEach("should deploy", async () => {
