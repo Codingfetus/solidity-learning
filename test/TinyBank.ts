@@ -8,6 +8,7 @@ describe("TinyBank", () => {
   let signers: HardhatEthersSigner[];
   let myTokenC: MyToken;
   let tinyBankC: TinyBank;
+  let managers: HardhatEthersSigner[];
   beforeEach(async () => {
     signers = await hre.ethers.getSigners();
     myTokenC = await hre.ethers.deployContract("MyToken", [
@@ -16,8 +17,10 @@ describe("TinyBank", () => {
       DECIMALS,
       MINTING_AMOUNT,
     ]);
+    managers = signers.slice(5, 8);
     tinyBankC = await hre.ethers.deployContract("TinyBank", [
       await myTokenC.getAddress(),
+      managers.map((m) => m.address),
     ]);
     await myTokenC.setManager(tinyBankC.getAddress());
   });
@@ -78,7 +81,7 @@ describe("TinyBank", () => {
       const rewardToChange = hre.ethers.parseUnits("10000", DECIMALS);
       await expect(
         tinyBankC.connect(hacker).setRewardPerBlock(rewardToChange),
-      ).to.be.revertedWith("You are not authorized to manage this contract");
+      ).to.be.revertedWith("You are not a manager");
     });
   });
 });
